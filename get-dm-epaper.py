@@ -1,3 +1,7 @@
+# File: get-dm-epaper.py
+# Author: PSG
+# Version: 0.1
+
 import sys
 import os
 import urllib2
