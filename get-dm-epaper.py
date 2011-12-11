@@ -9,7 +9,7 @@ from datetime import timedelta
 from BeautifulSoup import BeautifulSoup
 
 today = datetime.now()
-ePaperSetting = INIConfig()
+#ePaperSetting = INIConfig()
 
 if len(sys.argv) != 2:
     print 'Getting today\'s ePaper...'
