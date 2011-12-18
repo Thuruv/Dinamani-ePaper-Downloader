@@ -57,15 +57,18 @@ class Dinamani:
 
     
     def getSections(self,page=1,edition='main'):
-        if edition == 'vellimani'  and self.date.strftime("%w") != 5:
-            print edition + ' is not available for the specified date '
-            return []
-        if edition == 'kondattam' and self.date.strftime("%w") != 0:
-            print edition + ' is not available for the specified date '
-            return []
+        
+        #if (Dinamani.paper[edition] - int(self.date.strftime("%w")))< 1:
+        #    print edition + ' is not available for the specified date '
+        #    return []
+        #if Dinamani.paper[edition] - int(self.date.strftime("%w")) != 3:
+        #    print edition + ' is not available for the specified date '
+        #    return []
 
 
-        self.params.update({'txtpageno':page,'txtedition':Dinamani.paper[edition]})
+        self.params.update({'txtpageno':page})
+        
+        #self.params.update({'txtedition':Dinamani.paper[edition]})
         self.run()
         sectionList = []
         areaTags = self.dom.findAll('area')
@@ -77,6 +80,7 @@ class Dinamani:
         return list(sorted(set(sectionList)))
         
     def sectionListing(self,edition='main'):
+         print Dinamani.paper[edition]
          maxRange = 5
          if self.params['txtedition'] == 1:
              maxRange = 15
@@ -87,9 +91,11 @@ class Dinamani:
         
 
 def main():
-    dm = Dinamani("10/10/2011")
+    dm = Dinamani("16/12/2011")
+    #print dm.getSections(3)
     dm.sectionListing()
-    print dm.sectionList
+    print dm.SectionList
+    
     
     
 if __name__ == '__main__':
