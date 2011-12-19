@@ -107,7 +107,7 @@ class Dinamani:
 
         if self.params['txtedition'] == str(Dinamani.MAIN):
             maxRange = 15
-        log('maxRange = %d' % maxRange)
+        #log('maxRange = %d' % maxRange)
 
         threads = []
         semaphore = threading.Semaphore(14)
@@ -116,17 +116,17 @@ class Dinamani:
             threads.append(threading.Thread(target=self.getPage,args=(semaphore,i,edition)))
             threads[-1].start()
                            
-        log('getPages Done.') 
-        return self.sections
+        #log('getPages Done.') 
+        
         
 
 def main():
-    dm = Dinamani("16/12/2011")
+    #dm = Dinamani("16/12/2011")
     #print dm.getPage(4,Dinamani.VELLIMANI)
     #print dm.getPage(3,Dinamani.MAIN)
-    dm.getPages()
-    print dm.sections
-    
+    #dm.getPages()
+    #print dm.sections
+    print ''
     
     
     
