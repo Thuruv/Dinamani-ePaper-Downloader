@@ -1,7 +1,15 @@
+#!/usr/bin/env python
+
+"""
+__version__ = "$Revision: 0.1 $"
+__date__ = "$Date: 2011-12-19 $"
+"""
+
 import sys
 import urllib2
 import urllib
 from BeautifulSoup import BeautifulSoup
+import threading
 from datetime import datetime, date
 import time
 
@@ -57,31 +65,36 @@ class Dinamani:
                     self.params[i['name']] = ''
 
     
-    def getPage(self,page=1,edition=MAIN):
-        
-        sectionList = []
+    def getPage(self,semaphore,page=1,edition=MAIN):
+        semaphore.acquire()
+        try:
+            #log('page=%s,txtpageno= %s' % (page,self.params['txtpageno']) )
+            sectionList = []
 
-        # Vellimani
-        if edition == Dinamani.VELLIMANI and not self.hasVellimani(): return sectionList
+            # Vellimani
+            if edition == Dinamani.VELLIMANI and not self.hasVellimani(): return sectionList
 
-        # Kondattam
-        if edition == Dinamani.KONDATTAM and not self.hasKondattam(): return sectionList
+            # Kondattam
+            if edition == Dinamani.KONDATTAM and not self.hasKondattam(): return sectionList
         
-        # Update Viewstate if edition changes
-        if not self.params['txtedition'] == edition:
-            self.params.update({'txtpageno':1, 'txtedition':edition})
+            # Update Viewstate if edition changes
+            if not self.params['txtedition'] == edition:
+                self.params.update({'txtpageno':1, 'txtedition':edition})
+                self.run()
+
+            self.params.update({'txtpageno':page, 'txtedition':edition})
             self.run()
-
-        self.params.update({'txtpageno':page, 'txtedition':edition})
-        self.run()
         
-        areaTags = self.dom.findAll('area')
+            areaTags = self.dom.findAll('area')
 
-        for a in areaTags:
-            if a.has_key('onclick'):
-                sectionList.append(a['onclick'].split("\'")[3])
+            for a in areaTags:
+                if a.has_key('onclick'):
+                    sectionList.append(a['onclick'].split("\'")[3])
 
-        return list(sorted(set(sectionList)))
+            sectionList =  list(sorted(set(sectionList)))
+            self.sections.update({page:sectionList})
+        finally:
+            semaphore.release()
         
     def hasVellimani(self):
         return self.date.strftime("%w") == "5" # 5 - Friday
@@ -95,8 +108,14 @@ class Dinamani:
         if self.params['txtedition'] == str(Dinamani.MAIN):
             maxRange = 15
         log('maxRange = %d' % maxRange)
+
+        threads = []
+        semaphore = threading.Semaphore(14)
         for i in range(1,maxRange):
-            self.sections.update({i:self.getPage(i,edition)})
+            #self.sections.update({i:self.getPage(i,edition)})
+            threads.append(threading.Thread(target=self.getPage,args=(semaphore,i,edition)))
+            threads[-1].start()
+                           
         log('getPages Done.') 
         return self.sections
         
@@ -105,7 +124,8 @@ def main():
     dm = Dinamani("16/12/2011")
     #print dm.getPage(4,Dinamani.VELLIMANI)
     #print dm.getPage(3,Dinamani.MAIN)
-    print dm.getPages()
+    dm.getPages()
+    print dm.sections
     
     
     
