@@ -30,6 +30,7 @@ class Dinamani:
         self.sections = dict()
         self.params.update({'txtdate':self.date.strftime("%m/%d/%Y")})
         self.run(True)
+        self.getPages()
 
     def setDate(self,date):
         try:
@@ -116,16 +117,60 @@ class Dinamani:
             threads.append(threading.Thread(target=self.getPage,args=(semaphore,i,edition)))
             threads[-1].start()
                            
-        #log('getPages Done.') 
+        #log('getPages Done.')
+
+    def getEditionLabel(self):
+          if len(self.sections) == 14:
+              return "-cni-mn-"
+          elif self.hasVellimani():
+              return "-cni-vm-"
+          elif self.hasKondattam():
+              return "-cni-sk-"
+          else:
+              return "-cni-mn-"
+            
+    def getUrlFragment(self):
+        return "%s%s/%s/%s%s" % (Dinamani.baseurl,'epaperimages',
+                                ''.join(map( str, map(int,self.date.strftime("%d/%m/%Y").split('/')))),
+                                self.date.strftime("%d%m%Y"),self.getEditionLabel())
+
+    def getPageUrl(self,page=1,size=1):
+
+        if not 1<=page<=len(self.sections):
+            return list()
         
+        if not 0<size<3:
+            size=1
+            
+        if size == 1:
+            return "%s%02ds.jpg" % (self.getUrlFragment(),page)
+        else:
+            return "%s%02dll.jpg" % (self.getUrlFragment(),page)
+        
+    def getAllLinks(self,pageDict=None):
+          if pageDict == None:
+              pageDict = self.sections
+            
+          imageUrls = list();  
+
+          url = self.getUrlFragment()
+                                
+          for page in pageDict:
+              imageUrls.append('%s%02ds.jpg' % (url,int(page)))  # Entire Page - Small
+              imageUrls.append('%s%02dll.jpg' % (url,int(page))) # Entire Page - Large
+              for section in pageDict[page]:
+                  imageUrls.append('%s%02d/%s.jpg' % (url,int(page),section))
+
+          return imageUrls
+        
+    def getLinks(self,page=1):
+        if not 1<=page<=len(self.sections):
+            return list()
+        else:
+            return self.getAllLinks({page:self.sections[page]})
         
 
 def main():
-    #dm = Dinamani("16/12/2011")
-    #print dm.getPage(4,Dinamani.VELLIMANI)
-    #print dm.getPage(3,Dinamani.MAIN)
-    #dm.getPages()
-    #print dm.sections
     print ''
     
     
