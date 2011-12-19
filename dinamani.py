@@ -64,13 +64,15 @@ class Dinamani:
         #if Dinamani.paper[edition] - int(self.date.strftime("%w")) != 3:
         #    print edition + ' is not available for the specified date '
         #    return []
-
+        sectionList = []
+        
+        if (Dinamani.paper[edition] == "6"):  if not hasVellimani(): return sectionList
 
         self.params.update({'txtpageno':page})
         
         #self.params.update({'txtedition':Dinamani.paper[edition]})
         self.run()
-        sectionList = []
+        
         areaTags = self.dom.findAll('area')
 
         for a in areaTags:
@@ -80,10 +82,10 @@ class Dinamani:
         return list(sorted(set(sectionList)))
         
     def hasVellimani(self):
-        return self.date.strftime("%w") == "5"
+        return self.date.strftime("%w") == "5" # 5 - Friday
     
     def hasKondattam(self):
-        return self.date.strftime("%w") == "0"
+        return self.date.strftime("%w") == "0" # 0 - Sunday
     
     def sectionListing(self,edition='main'):
          maxRange = 5
@@ -97,8 +99,8 @@ class Dinamani:
 
 def main():
     dm = Dinamani("13/12/2011")
-    #print dm.getSections(3)
-    print dm.hasKondattam()
+    print dm.getSections(3,'Vellimani')
+    print dm.hasVellimani()
     #dm.sectionListing()
     #print dm.sectionList
     
