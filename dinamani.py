@@ -25,9 +25,17 @@ class Dinamani:
         try:
             self.date = datetime.strptime(date, "%d/%m/%Y")
         except ValueError,e:
-            sys.exit("Error: Date should in the format dd/mm/yyyy")
+            print("Error: Date should in the format dd/mm/yyyy")
+            self.__del__()
+            raise
+        
         self.params = dict()
         self.sections = dict()
+        
+        #if not self.isAvailable():
+        #    self.__del__()
+        #    raise
+        
         self.params.update({'txtdate':self.date.strftime("%m/%d/%Y")})
         self.run(True)
         self.getPages()
@@ -96,6 +104,16 @@ class Dinamani:
             self.sections.update({page:sectionList})
         finally:
             semaphore.release()
+
+    def isAvailable(self):
+        flag=True
+        try:
+            urllib2.urlopen(self.getPageUrl(),'',5)
+        except urllib2.URLError,e:
+            flag=False
+        return flag
+        
+
         
     def hasVellimani(self):
         return self.date.strftime("%w") == "5" # 5 - Friday
@@ -136,11 +154,9 @@ class Dinamani:
 
     def getPageUrl(self,page=1,size=1):
 
-        if not 1<=page<=len(self.sections):
-            return list()
+        if not 1<=page<=len(self.sections): return list()
         
-        if not 0<size<3:
-            size=1
+        if not 0<size<3: size=1
             
         if size == 1:
             return "%s%02ds.jpg" % (self.getUrlFragment(),page)
