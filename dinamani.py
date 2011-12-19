@@ -2,12 +2,15 @@ import sys
 import urllib2
 import urllib
 from BeautifulSoup import BeautifulSoup
-from datetime import datetime
-from datetime import date
+from datetime import datetime, date
+import time
+
+def log(str):
+    print "%s >>> %s" % (time.strftime("%x - %X", time.localtime()), str)
 
 class Dinamani:
     baseurl = 'http://epaper.dinamani.com/'
-    paper = { 'main':1, 'kondattam':3,'vellimani':6}
+    MAIN, VELLIMANI, KONDATTAM = (1,3,6)
     
     def __init__(self,date=datetime.today().strftime("%d/%m/%Y")):
         
@@ -16,9 +19,7 @@ class Dinamani:
         except ValueError,e:
             sys.exit("Error: Date should in the format dd/mm/yyyy")
         self.params = dict()
-        self.sectionList = dict()
-        self.page = ''
-        self.dom=''
+        self.sections = dict()
         self.params.update({'txtdate':self.date.strftime("%m/%d/%Y")})
         self.run(True)
 
@@ -56,21 +57,22 @@ class Dinamani:
                     self.params[i['name']] = ''
 
     
-    def getSections(self,page=1,edition='main'):
+    def getPage(self,page=1,edition=MAIN):
         
-        #if (Dinamani.paper[edition] - int(self.date.strftime("%w")))< 1:
-        #    print edition + ' is not available for the specified date '
-        #    return []
-        #if Dinamani.paper[edition] - int(self.date.strftime("%w")) != 3:
-        #    print edition + ' is not available for the specified date '
-        #    return []
         sectionList = []
-        
-        if (Dinamani.paper[edition] == "6"):  if not hasVellimani(): return sectionList
 
-        self.params.update({'txtpageno':page})
+        # Vellimani
+        if edition == Dinamani.VELLIMANI and not self.hasVellimani(): return sectionList
+
+        # Kondattam
+        if edition == Dinamani.KONDATTAM and not self.hasKondattam(): return sectionList
         
-        #self.params.update({'txtedition':Dinamani.paper[edition]})
+        # Update Viewstate if edition changes
+        if not self.params['txtedition'] == edition:
+            self.params.update({'txtpageno':1, 'txtedition':edition})
+            self.run()
+
+        self.params.update({'txtpageno':page, 'txtedition':edition})
         self.run()
         
         areaTags = self.dom.findAll('area')
@@ -87,22 +89,24 @@ class Dinamani:
     def hasKondattam(self):
         return self.date.strftime("%w") == "0" # 0 - Sunday
     
-    def sectionListing(self,edition='main'):
-         maxRange = 5
-         if self.params['txtedition'] == 1:
-             maxRange = 15
-         for i in range(1,maxRange):
-             self.sectionList.update({i:self.getSections(i,Dinamani.paper[edition])})
-         
-    
+    def getPages(self,edition=MAIN):
+        maxRange = 5
+
+        if self.params['txtedition'] == str(Dinamani.MAIN):
+            maxRange = 15
+        log('maxRange = %d' % maxRange)
+        for i in range(1,maxRange):
+            self.sections.update({i:self.getPage(i,edition)})
+        log('getPages Done.') 
+        return self.sections
         
 
 def main():
-    dm = Dinamani("13/12/2011")
-    print dm.getSections(3,'Vellimani')
-    print dm.hasVellimani()
-    #dm.sectionListing()
-    #print dm.sectionList
+    dm = Dinamani("16/12/2011")
+    #print dm.getPage(4,Dinamani.VELLIMANI)
+    #print dm.getPage(3,Dinamani.MAIN)
+    print dm.getPages()
+    
     
     
     
