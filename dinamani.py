@@ -79,8 +79,13 @@ class Dinamani:
 
         return list(sorted(set(sectionList)))
         
+    def hasVellimani(self):
+        return self.date.strftime("%w") == "5"
+    
+    def hasKondattam(self):
+        return self.date.strftime("%w") == "0"
+    
     def sectionListing(self,edition='main'):
-         print Dinamani.paper[edition]
          maxRange = 5
          if self.params['txtedition'] == 1:
              maxRange = 15
@@ -91,10 +96,11 @@ class Dinamani:
         
 
 def main():
-    dm = Dinamani("16/12/2011")
+    dm = Dinamani("13/12/2011")
     #print dm.getSections(3)
-    dm.sectionListing()
-    print dm.SectionList
+    print dm.hasKondattam()
+    #dm.sectionListing()
+    #print dm.sectionList
     
     
     
