@@ -37,8 +37,12 @@ class Dinamani:
         #    raise
         
         self.params.update({'txtdate':self.date.strftime("%m/%d/%Y")})
-        self.run(True)
-        self.getPages()
+        try:
+            self.run(True)
+        except e:
+            print e.reason
+        else:                       
+            self.getPages()
 
     def setDate(self,date):
         try:
@@ -58,20 +62,21 @@ class Dinamani:
             
         try:
             if init: # for First Iteration 
-                self.page=urllib2.urlopen(url + '?queryed=1&eddate=' + self.params['txtdate'])
+                self.page=urllib2.urlopen(url + '?queryed=1&eddate=' + self.params['txtdate'],None,10)
             else:
-                self.page = urllib2.urlopen(url,params)
+                self.page = urllib2.urlopen(url,params,10)
         except urllib2.URLError,e:
-            print 'URL %s failed: %s' % (url,e.reason)
-        
-        self.dom = BeautifulSoup(self.page)
-        inputTags = self.dom.findAll('input')
-        for i in inputTags:
-            if i.has_key('name'):
-                if i.has_key('value'):
-                    self.params[i['name']] = i['value']
-                else:
-                    self.params[i['name']] = ''
+            print 'Error: Failed to open %s\nReason: %s' % (url,e.reason)
+        else:
+            self.dom = BeautifulSoup(self.page)
+            inputTags = self.dom.findAll('input')
+
+            for i in inputTags:
+                if i.has_key('name'):
+                    if i.has_key('value'):
+                        self.params[i['name']] = i['value']
+                    else:
+                        self.params[i['name']] = ''
 
     
     def getPage(self,semaphore,page=1,edition=MAIN):
